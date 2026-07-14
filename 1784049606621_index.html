@@ -1,0 +1,507 @@
+    <!DOCTYPE html>
+    <html lang="ar" dir="rtl">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>📤 file.png - Buildura Cloud</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+              <script>
+        function checkPassword() {
+          const entered = document.getElementById('passwordInput').value;
+          const correct = '123';
+          if (entered === correct) {
+            document.getElementById('passwordScreen').style.display = 'none';
+            document.getElementById('contentScreen').style.display = 'block';
+          } else {
+            document.getElementById('errorMsg').textContent = '❌ كلمة المرور غير صحيحة';
+            document.getElementById('errorMsg').style.display = 'block';
+          }
+        }
+      </script>
+      
+        
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            
+            body {
+                background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #0d1b2a 100%);
+                color: #ffffff;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px;
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            }
+            
+            .main-container {
+                max-width: 900px;
+                width: 100%;
+                margin: 20px auto;
+                flex: 1;
+            }
+            
+            .header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding: 30px 20px 20px;
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 20px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                backdrop-filter: blur(10px);
+            }
+            
+            .header .brand {
+                font-size: 14px;
+                color: rgba(255, 255, 255, 0.3);
+                letter-spacing: 3px;
+                text-transform: uppercase;
+                font-weight: 300;
+            }
+            
+            .header .brand span {
+                color: #60a5fa;
+                font-weight: 600;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+                font-weight: 600;
+                margin-top: 8px;
+                background: linear-gradient(135deg, #60a5fa, #a78bfa);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+            }
+            
+            .header .subtitle {
+                font-size: 13px;
+                color: rgba(255, 255, 255, 0.3);
+                margin-top: 4px;
+            }
+            
+            .card {
+                background: rgba(30, 27, 50, 0.8);
+                backdrop-filter: blur(20px);
+                border-radius: 24px;
+                padding: 40px 30px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+            }
+            
+            .file-info-card {
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                padding: 20px;
+                background: rgba(255, 255, 255, 0.03);
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                margin-bottom: 30px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .file-icon {
+                font-size: 48px;
+                line-height: 1;
+            }
+            
+            .file-info {
+                text-align: center;
+            }
+            
+            .file-name-display {
+                font-size: 20px;
+                font-weight: 600;
+                word-break: break-all;
+            }
+            
+            .file-size, .file-type {
+                font-size: 14px;
+                color: rgba(255, 255, 255, 0.4);
+                margin-top: 4px;
+            }
+            
+            .content-wrapper {
+                margin: 20px 0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .media-player {
+                max-width: 100%;
+                max-height: 70vh;
+                border-radius: 16px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+                background: #000;
+                width: 100%;
+            }
+            
+            .media-image {
+                max-width: 100%;
+                max-height: 70vh;
+                border-radius: 16px;
+                object-fit: contain;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            }
+            
+            .media-audio {
+                width: 100%;
+                max-width: 500px;
+            }
+            
+            .media-pdf {
+                width: 100%;
+                height: 70vh;
+                border-radius: 16px;
+                border: none;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            }
+            
+            .file-preview {
+                padding: 30px;
+                background: rgba(255, 255, 255, 0.02);
+                border-radius: 16px;
+                border: 1px dashed rgba(255, 255, 255, 0.1);
+                text-align: center;
+            }
+            
+            .code-wrapper {
+                background: #0a0a1a;
+                border-radius: 16px;
+                border: 1px solid rgba(255, 255, 255, 0.05);
+                overflow: hidden;
+                width: 100%;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            }
+            
+            .code-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px 20px;
+                background: rgba(255, 255, 255, 0.03);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            }
+            
+            .code-lang {
+                font-size: 12px;
+                color: #60a5fa;
+                font-weight: 600;
+                letter-spacing: 1px;
+            }
+            
+            .code-lines {
+                font-size: 12px;
+                color: rgba(255, 255, 255, 0.3);
+            }
+            
+            .code-content {
+                padding: 20px;
+                margin: 0;
+                overflow: auto;
+                max-height: 60vh;
+                font-family: 'Courier New', monospace;
+                font-size: 14px;
+                line-height: 1.8;
+                color: #e0e0e0;
+                white-space: pre-wrap;
+                word-break: break-word;
+                background: transparent;
+            }
+            
+            .code-content code {
+                font-family: inherit;
+                background: transparent;
+                padding: 0;
+            }
+            
+            .actions {
+                display: flex;
+                gap: 12px;
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-top: 25px;
+            }
+            
+            .btn {
+                padding: 14px 40px;
+                border: none;
+                border-radius: 50px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                justify-content: center;
+            }
+            
+            .btn-download {
+                background: linear-gradient(135deg, #3b82f6, #6366f1);
+                color: white;
+                box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .btn-download:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 40px rgba(59, 130, 246, 0.4);
+            }
+            
+            .btn-code {
+                background: rgba(255, 255, 255, 0.05);
+                color: rgba(255, 255, 255, 0.7);
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                flex: 1;
+                min-width: 150px;
+            }
+            
+            .btn-code:hover {
+                background: rgba(255, 255, 255, 0.1);
+                transform: translateY(-3px);
+            }
+            
+            .badge-container {
+                text-align: center;
+                margin-top: 25px;
+            }
+            
+            .badge {
+                display: inline-block;
+                padding: 6px 20px;
+                background: rgba(59, 130, 246, 0.1);
+                border: 1px solid rgba(59, 130, 246, 0.2);
+                border-radius: 50px;
+                font-size: 12px;
+                color: #60a5fa;
+                letter-spacing: 0.5px;
+            }
+            
+            .expiry-info {
+                text-align: center;
+                margin-top: 15px;
+                padding: 10px;
+                background: rgba(239, 68, 68, 0.1);
+                border: 1px solid rgba(239, 68, 68, 0.2);
+                border-radius: 12px;
+                color: #f87171;
+                font-size: 14px;
+            }
+            
+            .password-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #0d1b2a 100%);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            }
+            
+            .password-box {
+                background: rgba(30, 27, 50, 0.95);
+                backdrop-filter: blur(20px);
+                padding: 50px 40px;
+                border-radius: 24px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+            }
+            
+            .lock-icon {
+                font-size: 60px;
+                margin-bottom: 20px;
+            }
+            
+            .password-box h2 {
+                font-size: 20px;
+                margin-bottom: 8px;
+                color: #fff;
+            }
+            
+            .password-sub {
+                color: rgba(255, 255, 255, 0.4);
+                font-size: 14px;
+                margin-bottom: 25px;
+            }
+            
+            .password-input {
+                width: 100%;
+                padding: 14px 20px;
+                border-radius: 12px;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+                background: rgba(255, 255, 255, 0.05);
+                color: #fff;
+                font-size: 16px;
+                text-align: center;
+                margin-bottom: 15px;
+                transition: border-color 0.3s;
+                direction: ltr;
+            }
+            
+            .password-input:focus {
+                outline: none;
+                border-color: #3b82f6;
+            }
+            
+            .password-input::placeholder {
+                color: rgba(255, 255, 255, 0.2);
+            }
+            
+            .password-btn {
+                width: 100%;
+                padding: 14px;
+                font-size: 16px;
+            }
+            
+            .expired-screen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #0d1b2a 100%);
+                display: none;
+                align-items: center;
+                justify-content: center;
+                z-index: 999;
+            }
+            
+            .expired-box {
+                background: rgba(30, 27, 50, 0.95);
+                backdrop-filter: blur(20px);
+                padding: 50px 40px;
+                border-radius: 24px;
+                border: 1px solid rgba(255, 255, 255, 0.06);
+                box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5);
+                max-width: 400px;
+                width: 90%;
+                text-align: center;
+            }
+            
+            .expired-icon {
+                font-size: 60px;
+                margin-bottom: 20px;
+            }
+            
+            .expired-box h2 {
+                font-size: 22px;
+                color: #ef4444;
+                margin-bottom: 8px;
+            }
+            
+            .expired-box p {
+                color: rgba(255, 255, 255, 0.4);
+                font-size: 14px;
+            }
+            
+            #contentScreen {
+                display: none;
+            }
+            
+            .footer {
+                text-align: center;
+                padding: 30px 0 10px;
+                color: rgba(255, 255, 255, 0.15);
+                font-size: 14px;
+                width: 100%;
+            }
+            
+            .footer a {
+                color: rgba(255, 255, 255, 0.25);
+                text-decoration: none;
+                transition: color 0.3s;
+            }
+            
+            .footer a:hover {
+                color: rgba(255, 255, 255, 0.4);
+            }
+            
+            @media (max-width: 600px) {
+                .card { padding: 20px 15px; }
+                .file-info-card { flex-direction: column; text-align: center; }
+                .btn { min-width: 100%; }
+                .header h1 { font-size: 18px; }
+                .file-name-display { font-size: 17px; }
+                .password-box { padding: 30px 20px; }
+            }
+        </style>
+    </head>
+    <body>
+              <div id="passwordScreen" class="password-screen">
+        <div class="password-box">
+          <div class="lock-icon">🔒</div>
+          <h2>هذه الصفحة محمية بكلمة مرور</h2>
+          <p class="password-sub">أدخل كلمة المرور لعرض المحتوى</p>
+          <input type="password" id="passwordInput" class="password-input" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter') checkPassword()">
+          <button onclick="checkPassword()" class="btn btn-download password-btn">فتح الصفحة</button>
+          <p id="errorMsg" style="color:#ef4444;display:none;margin-top:10px;"></p>
+        </div>
+      </div>
+      
+        
+        <div id="expiredScreen" class="expired-screen">
+            <div class="expired-box">
+                <div class="expired-icon">⏰</div>
+                <h2>انتهت صلاحية الرابط</h2>
+                <p>هذا الرابط لم يعد صالحاً للاستخدام</p>
+            </div>
+        </div>
+        
+        <div id="contentScreen" class="main-container">
+            <div class="header">
+                <div class="brand">📤 <span>Buildura</span> Cloud</div>
+                <h1>تم مشاركة هذا الملف عبر Buildura Cloud</h1>
+                <div class="subtitle">🔒 تخزين آمن ومشاركة فورية</div>
+            </div>
+            
+            <div class="card">
+                <div class="file-info-card">
+                    <div class="file-icon">🖼️</div>
+                    <div class="file-info">
+                        <div class="file-name-display">file.png</div>
+                        <div class="file-size">📦 الحجم: 61.7 KB</div>
+                        <div class="file-type">📂 النوع: PNG</div>
+                    </div>
+                </div>
+                
+                      <div class="content-wrapper">
+        <img src="https://raw.githubusercontent.com/jawadbinmahmoud/jawadbinmahmoud.github.io/main/files/1784049605054_file.png" alt="file.png" class="media-image">
+      </div>
+      
+                
+                <div class="actions">
+                    <a href="https://raw.githubusercontent.com/jawadbinmahmoud/jawadbinmahmoud.github.io/main/files/1784049605054_file.png" class="btn btn-download" download>
+                        ⬇️ تحميل الملف
+                    </a>
+                    
+                </div>
+                
+                
+                
+                <div class="badge-container">
+                    <span class="badge">🔒 مستضاف على GitHub • آمن ومجاني</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            Powered with ❤️ by <a href="mailto:buildurabusiness@gmail.com">buildurabusiness@gmail.com</a>
+        </div>
+    </body>
+    </html>
+    
