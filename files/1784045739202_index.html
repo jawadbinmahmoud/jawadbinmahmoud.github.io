@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Excel Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg:       #0d1117;
+  --surface:  #161b22;
+  --elevated: #1c2333;
+  --card:     #1e2736;
+
+  --b0: #21262d;
+  --b1: #30363d;
+  --b2: #3d444e;
+
+  --g50:  #e6f4ea;
+  --g400: #4caf50;
+  --g500: #217346;
+  --g600: #1a5c38;
+  --glow: rgba(33,115,70,.35);
+  --glow2:rgba(76,175,80,.5);
+
+  --green:  #4caf50;
+  --bright: #69d46e;
+  --muted:  #2d6a4f;
+
+  --t1: #e6edf3;
+  --t2: #8b949e;
+  --t3: #484f58;
+  --tg: #56d364;
+
+  --red:  #f85149;
+  --yel:  #e3b341;
+  --blue: #58a6ff;
+  --ora:  #ff8c42;
+
+  --r4: 4px; --r8: 8px; --r12: 12px; --r16: 16px; --r20: 20px;
+  --fa: 'IBM Plex Sans Arabic', system-ui, sans-serif;
+  --fm: 'JetBrains Mono', monospace;
+  --tf: 150ms cubic-bezier(.4,0,.2,1);
+  --tn: 280ms cubic-bezier(.4,0,.2,1);
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--fa);background:var(--bg);color:var(--t1);min-height:100vh;overflow-x:hidden;line-height:1.6}
+
+/* grid bg */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--b0) 1px,transparent 1px),linear-gradient(90deg,var(--b0) 1px,transparent 1px);background-size:40px 40px;opacity:.35;pointer-events:none;z-index:0}
+
+/* ── SCREENS ── */
+.screen{position:relative;z-index:1;min-height:100vh;display:none;flex-direction:column}
+.screen.active{display:flex}
+
+/* ══════════════════════════════════════════
+   SCREEN 1 — UPLOAD
+══════════════════════════════════════════ */
+#s-upload{align-items:center;justify-content:center;padding:40px 20px}
+
+.upload-box{width:100%;max-width:520px}
+
+.brand{text-align:center;margin-bottom:44px}
+.brand-icon{width:52px;height:52px;background:linear-gradient(135deg,var(--g500),var(--green));border-radius:var(--r12);display:grid;place-items:center;font-size:24px;margin:0 auto 16px;box-shadow:0 0 32px var(--glow),0 0 60px rgba(33,115,70,.15)}
+.brand h1{font-size:22px;font-weight:700;margin-bottom:6px}
+.brand p{font-size:13px;color:var(--t2)}
+
+/* drop zone */
+.dz{
+  border:2px dashed var(--b1);
+  border-radius:var(--r20);
+  padding:48px 28px;
+  text-align:center;
+  cursor:pointer;
+  background:var(--surface);
+  position:relative;
+  overflow:hidden;
+  transition:border-color var(--tn),background var(--tn),box-shadow var(--tn),transform var(--tn);
+}
+.dz::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(33,115,70,.08),transparent 70%);opacity:0;transition:opacity var(--tn);pointer-events:none}
+.dz:hover,.dz.over{border-color:var(--green);background:rgba(33,115,70,.05);box-shadow:0 0 0 4px rgba(33,115,70,.1),0 0 40px var(--glow);transform:translateY(-2px)}
+.dz:hover::after,.dz.over::after{opacity:1}
+.dz.over{border-color:var(--bright);animation:dzPulse 1.1s ease-in-out infinite}
+@keyframes dzPulse{0%,100%{box-shadow:0 0 0 4px rgba(76,175,80,.12),0 0 40px var(--glow)}50%{box-shadow:0 0 0 7px rgba(76,175,80,.2),0 0 64px var(--glow2)}}
+
+.dz-icon{font-size:40px;margin-bottom:16px;display:block;transition:transform var(--tn)}
+.dz:hover .dz-icon,.dz.over .dz-icon{transform:translateY(-5px) scale(1.08)}
+.dz.over .dz-icon{animation:dzBounce .5s ease infinite alternate}
+@keyframes dzBounce{to{transform:translateY(-10px) scale(1.12)}}
+
+.dz-title{font-size:16px;font-weight:600;margin-bottom:6px;transition:color var(--tf)}
+.dz:hover .dz-title,.dz.over .dz-title{color:var(--bright)}
+.dz-sub{font-size:12px;color:var(--t2);margin-bottom:20px}
+
+.fmt-row{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.fmt{font-family:var(--fm);font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--b1);color:var(--t2);background:var(--elevated)}
+.fmt.hi{border-color:rgba(33,115,70,.5);color:var(--green);background:rgba(33,115,70,.08)}
+
+.dz-hint{
+  display:none;
+  position:absolute;bottom:14px;left:50%;transform:translateX(-50%);
+  background:rgba(76,175,80,.12);border:1px solid var(--green);
+  border-radius:var(--r8);padding:6px 16px;font-size:12px;color:var(--bright);
+  font-family:var(--fm);white-space:nowrap;backdrop-filter:blur(6px);
+}
+.dz.over .dz-hint{display:block;animation:hintIn .2s ease}
+@keyframes hintIn{from{opacity:0;transform:translateX(-50%) translateY(6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* file queue */
+.fq{margin-top:16px;display:flex;flex-direction:column;gap:10px}
+
+.fc{
+  background:var(--surface);border:1px solid var(--b1);border-radius:var(--r12);
+  padding:14px 16px;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:start;
+  animation:fcIn .3s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes fcIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.fc.up{border-color:rgba(33,115,70,.4)}
+.fc.done{border-color:rgba(86,211,100,.35);background:rgba(33,115,70,.04)}
+.fc.err{border-color:rgba(248,81,73,.35);background:rgba(248,81,73,.04)}
+
+.ficon{width:44px;height:44px;border-radius:var(--r8);display:grid;place-items:center;font-size:20px;font-weight:700;border:1px solid var(--b1);background:var(--elevated);flex-shrink:0}
+.ficon.xlsx{background:rgba(33,115,70,.15);border-color:rgba(33,115,70,.4);color:var(--green)}
+.ficon.csv{background:rgba(88,166,255,.1);border-color:rgba(88,166,255,.3);color:var(--blue)}
+.ficon.xls{background:rgba(33,115,70,.1);border-color:rgba(33,115,70,.3);color:#81c784}
+
+.fname{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+.fmeta{font-size:11px;color:var(--t2);font-family:var(--fm);display:flex;gap:8px;flex-wrap:wrap}
+
+.ptrack{height:3px;background:var(--b0);border-radius:99px;overflow:hidden;margin-top:8px}
+.pfill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--g500),var(--bright));transition:width .3s ease;position:relative;overflow:hidden}
+.pfill::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);animation:shim 1.3s ease infinite}
+@keyframes shim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+
+.fstats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--b0);border-radius:var(--r4);overflow:hidden;margin-top:8px}
+.fstat{background:var(--elevated);padding:7px 10px;text-align:center}
+.fstat-v{font-family:var(--fm);font-size:13px;font-weight:600;color:var(--green);display:block}
+.fstat-l{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;display:block;margin-top:1px}
+
+.fstatus{font-size:11px;display:flex;align-items:center;gap:5px;margin-top:6px}
+.fstatus.up{color:var(--green)}.fstatus.done{color:var(--tg)}.fstatus.err{color:var(--red)}
+
+.ferr{margin-top:8px;padding:8px 12px;background:rgba(248,81,73,.06);border:1px solid rgba(248,81,73,.2);border-radius:var(--r4);font-size:11px;font-family:var(--fm);color:var(--red);line-height:1.5}
+.btn-retry{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:5px 12px;background:rgba(248,81,73,.1);border:1px solid rgba(248,81,73,.3);border-radius:var(--r4);color:var(--red);font-size:11px;cursor:pointer;transition:all var(--tf);font-family:var(--fa)}
+.btn-retry:hover{background:rgba(248,81,73,.18);border-color:var(--red)}
+
+.fact{display:flex;gap:6px;flex-shrink:0}
+.bico{width:30px;height:30px;border:1px solid var(--b1);background:var(--elevated);border-radius:var(--r4);display:grid;place-items:center;cursor:pointer;font-size:13px;color:var(--t2);transition:all var(--tf)}
+.bico:hover{border-color:var(--b2);color:var(--t1)}
+.bico.d:hover{border-color:var(--red);color:var(--red);background:rgba(248,81,73,.08)}
+
+/* spinning */
+.sp{display:inline-block;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ══════════════════════════════════════════
+   SCREEN 2 — AI ANALYSIS
+══════════════════════════════════════════ */
+#s-analysis{background:var(--bg)}
+
+.ana-header{
+  padding:18px 28px;
+  border-bottom:1px solid var(--b0);
+  background:rgba(13,17,23,.9);
+  backdrop-filter:blur(16px);
+  display:flex;align-items:center;gap:14px;
+  position:sticky;top:0;z-index:50;
+}
+.ana-back{width:34px;height:34px;border:1px solid var(--b1);background:var(--elevated);border-radius:var(--r8);display:grid;place-items:center;cursor:pointer;font-size:16px;color:var(--t2);transition:all var(--tf)}
+.ana-back:hover{border-color:var(--b2);color:var(--t1)}
+.ana-title{font-size:15px;font-weight:600}
+.ana-file{font-size:11px;color:var(--t2);font-family:var(--fm);margin-top:1px}
+
+.ana-badge{
+  margin-right:auto;font-family:var(--fm);font-size:11px;
+  color:var(--blue);background:rgba(88,166,255,.08);
+  border:1px solid rgba(88,166,255,.2);padding:4px 10px;border-radius:20px;
+  display:flex;align-items:center;gap:6px;
+}
+.ana-badge.done{color:var(--tg);background:rgba(86,211,100,.08);border-color:rgba(86,211,100,.2)}
+
+.dot{width:6px;height:6px;border-radius:50%;background:currentColor;animation:blink 1.4s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+.ana-body{flex:1;padding:32px 28px;max-width:820px;margin:0 auto;width:100%}
+
+/* token stream */
+.stream-wrap{
+  background:var(--surface);border:1px solid var(--b1);border-radius:var(--r16);
+  padding:28px;min-height:300px;font-size:14px;line-height:1.85;
+  position:relative;
+}
+.stream-wrap h2{font-size:15px;font-weight:600;color:var(--bright);margin:20px 0 10px}
+.stream-wrap h2:first-child{margin-top:0}
+.stream-wrap h3{font-size:13px;font-weight:600;color:var(--t1);margin:14px 0 7px}
+.stream-wrap p{margin-bottom:10px;color:var(--t2)}
+.stream-wrap strong{color:var(--t1)}
+.stream-wrap ul{padding-right:18px;margin-bottom:10px}
+.stream-wrap li{color:var(--t2);margin-bottom:4px}
+.stream-wrap code{font-family:var(--fm);font-size:12px;background:var(--elevated);border:1px solid var(--b1);padding:1px 6px;border-radius:4px;color:var(--tg)}
+.stream-wrap table{width:100%;border-collapse:collapse;margin:14px 0;font-size:12px}
+.stream-wrap th{background:var(--elevated);padding:8px 12px;text-align:right;font-weight:600;border:1px solid var(--b1);color:var(--green)}
+.stream-wrap td{padding:7px 12px;border:1px solid var(--b0);color:var(--t2)}
+.stream-wrap tr:nth-child(even) td{background:rgba(255,255,255,.02)}
+
+.cursor{display:inline-block;width:2px;height:14px;background:var(--green);vertical-align:middle;animation:blink .7s step-end infinite;margin-right:2px}
+
+.stream-thinking{
+  display:flex;align-items:center;gap:10px;
+  color:var(--t2);font-size:13px;padding:20px 0;
+}
+.think-dots span{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);animation:thinkDot 1.2s ease-in-out infinite}
+.think-dots span:nth-child(2){animation-delay:.2s}
+.think-dots span:nth-child(3){animation-delay:.4s}
+@keyframes thinkDot{0%,60%,100%{transform:translateY(0);opacity:.3}30%{transform:translateY(-6px);opacity:1}}
+
+/* ══════════════════════════════════════════
+   SCREEN 3 — DASHBOARD
+══════════════════════════════════════════ */
+#s-dashboard{background:var(--bg)}
+
+.db-header{
+  padding:16px 28px;border-bottom:1px solid var(--b0);
+  background:rgba(13,17,23,.9);backdrop-filter:blur(16px);
+  display:flex;align-items:center;gap:12px;
+  position:sticky;top:0;z-index:50;
+}
+.db-back{width:32px;height:32px;border:1px solid var(--b1);background:var(--elevated);border-radius:var(--r8);display:grid;place-items:center;cursor:pointer;font-size:15px;color:var(--t2);transition:all var(--tf);flex-shrink:0}
+.db-back:hover{border-color:var(--b2);color:var(--t1)}
+.db-title{font-size:15px;font-weight:600}
+.db-sub{font-size:11px;color:var(--t2);font-family:var(--fm)}
+.db-actions{margin-right:auto;display:flex;gap:8px}
+.btn-sm{padding:7px 14px;border:1px solid var(--b1);background:var(--elevated);border-radius:var(--r8);color:var(--t1);font-size:12px;cursor:pointer;transition:all var(--tf);font-family:var(--fa)}
+.btn-sm:hover{border-color:var(--b2);background:var(--card)}
+.btn-sm.green{border-color:rgba(33,115,70,.5);background:rgba(33,115,70,.12);color:var(--green)}
+.btn-sm.green:hover{background:rgba(33,115,70,.2)}
+
+.db-body{padding:24px 28px;max-width:1200px;margin:0 auto;width:100%}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:24px}
+.kpi{background:var(--surface);border:1px solid var(--b1);border-radius:var(--r12);padding:18px 20px;transition:border-color var(--tf)}
+.kpi:hover{border-color:var(--b2)}
+.kpi-label{font-size:11px;color:var(--t2);text-transform:uppercase;letter-spacing:.06em;font-family:var(--fm);margin-bottom:8px}
+.kpi-value{font-size:26px;font-weight:700;font-family:var(--fm);line-height:1}
+.kpi-change{font-size:11px;margin-top:6px;font-family:var(--fm)}
+.kpi-change.pos{color:var(--tg)}.kpi-change.neg{color:var(--red)}
+
+/* chart grid */
+.chart-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-bottom:24px}
+.chart-card{background:var(--surface);border:1px solid var(--b1);border-radius:var(--r12);padding:20px;transition:border-color var(--tf)}
+.chart-card:hover{border-color:var(--b2)}
+.chart-card.wide{grid-column:1/-1}
+.chart-title{font-size:13px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.chart-title-dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green)}
+.chart-wrap{position:relative;height:220px}
+.chart-wrap.tall{height:300px}
+
+/* data table */
+.tbl-card{background:var(--surface);border:1px solid var(--b1);border-radius:var(--r12);overflow:hidden;margin-bottom:16px}
+.tbl-head{padding:16px 20px;border-bottom:1px solid var(--b0);display:flex;align-items:center;justify-content:space-between}
+.tbl-title{font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px}
+.tbl-count{font-family:var(--fm);font-size:11px;color:var(--t2);background:var(--elevated);border:1px solid var(--b1);padding:2px 8px;border-radius:20px}
+.tbl-wrap{overflow-x:auto}
+table.dt{width:100%;border-collapse:collapse;font-size:12px}
+table.dt th{padding:9px 14px;text-align:right;font-weight:600;background:var(--elevated);color:var(--t2);border-bottom:1px solid var(--b0);white-space:nowrap;font-family:var(--fm)}
+table.dt td{padding:9px 14px;border-bottom:1px solid var(--b0);color:var(--t2);font-family:var(--fm);white-space:nowrap}
+table.dt tr:last-child td{border-bottom:none}
+table.dt tr:hover td{background:rgba(255,255,255,.02)}
+.td-num{color:var(--green);font-weight:500}
+.td-pos{color:var(--tg)}.td-neg{color:var(--red)}
+
+/* insights */
+.ins-card{background:var(--surface);border:1px solid var(--b1);border-radius:var(--r12);padding:20px;margin-bottom:16px}
+.ins-title{font-size:13px;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ins-list{display:flex;flex-direction:column;gap:10px}
+.ins-item{display:flex;gap:12px;padding:12px;background:var(--elevated);border-radius:var(--r8);border:1px solid var(--b0)}
+.ins-icon{font-size:18px;flex-shrink:0;width:28px;text-align:center}
+.ins-text{font-size:12px;color:var(--t2);line-height:1.6}
+.ins-text strong{color:var(--t1);display:block;margin-bottom:2px;font-size:13px}
+
+/* empty dash */
+.dash-empty{text-align:center;padding:80px 20px;color:var(--t2)}
+.dash-empty h3{font-size:18px;margin-bottom:8px;color:var(--t1)}
+
+/* ── header server badge ── */
+.srv{margin-right:auto;font-family:var(--fm);font-size:11px;color:var(--tg);background:rgba(86,211,100,.08);border:1px solid rgba(86,211,100,.2);padding:4px 10px;border-radius:20px;display:flex;align-items:center;gap:6px}
+
+/* ── toast ── */
+.tc{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;gap:6px;align-items:center;pointer-events:none}
+.toast{background:var(--elevated);border:1px solid var(--b1);border-radius:var(--r8);padding:9px 18px;font-size:12px;box-shadow:0 8px 28px rgba(0,0,0,.4);display:flex;align-items:center;gap:8px;max-width:320px;animation:tIn .3s cubic-bezier(.34,1.56,.64,1) both,tOut .3s ease forwards 2.7s}
+.toast.ok{border-color:rgba(86,211,100,.3);color:var(--tg)}.toast.er{border-color:rgba(248,81,73,.3);color:var(--red)}
+@keyframes tIn{from{opacity:0;transform:translateY(10px) scale(.95)}to{opacity:1;transform:none}}
+@keyframes tOut{to{opacity:0;transform:translateY(-6px)}}
+
+/* ── transitions between screens ── */
+.screen{transition:opacity .35s ease}
+.screen.fade-out{opacity:0;pointer-events:none}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.au{animation:fadeUp .45s ease both}
+
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b1);border-radius:99px}
+
+@media(max-width:600px){
+  .db-body,.ana-body{padding:16px}
+  .chart-grid{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .fc{grid-template-columns:36px 1fr auto;gap:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ SCREEN 1: UPLOAD ══ -->
+<div id="s-upload" class="screen active">
+  <div class="upload-box au">
+    <div class="brand">
+      <div class="brand-icon">⬡</div>
+      <h1>Excel Dashboard</h1>
+      <p>ارفع ملفك وسيحوّله الذكاء الاصطناعي لـ Dashboard فوراً</p>
+    </div>
+
+    <div class="dz" id="dz">
+      <span class="dz-icon">📂</span>
+      <div class="dz-title">اسحب الملف هنا أو انقر للاختيار</div>
+      <div class="dz-sub">يمكنك رفع أكثر من ملف في وقت واحد</div>
+      <div class="fmt-row">
+        <span class="fmt hi">.xlsx</span>
+        <span class="fmt hi">.xls</span>
+        <span class="fmt">.csv</span>
+        <span class="fmt">.tsv</span>
+      </div>
+      <div class="dz-hint" id="dzHint">📄 أفلت لرفع الملف</div>
+    </div>
+    <input type="file" id="fi" multiple accept=".xlsx,.xls,.csv,.tsv" style="display:none">
+
+    <div class="fq" id="fq"></div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 2: AI ANALYSIS ══ -->
+<div id="s-analysis" class="screen">
+  <div class="ana-header">
+    <button class="ana-back" onclick="goTo('s-upload')" title="رجوع">←</button>
+    <div>
+      <div class="ana-title">تحليل الذكاء الاصطناعي</div>
+      <div class="ana-file" id="anaFile">—</div>
+    </div>
+    <div class="ana-badge" id="anaBadge">
+      <span class="dot"></span>
+      <span id="anaBadgeText">يعالج...</span>
+    </div>
+  </div>
+  <div class="ana-body">
+    <div class="stream-wrap" id="streamWrap">
+      <div class="stream-thinking" id="thinking">
+        <div class="think-dots"><span></span><span></span><span></span></div>
+        <span>يقرأ البيانات ويحللها...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SCREEN 3: DASHBOARD ══ -->
+<div id="s-dashboard" class="screen">
+  <div class="db-header">
+    <button class="db-back" onclick="goTo('s-upload')" title="رجوع">←</button>
+    <div>
+      <div class="db-title" id="dbTitle">Dashboard</div>
+      <div class="db-sub" id="dbSub">—</div>
+    </div>
+    <div class="db-actions">
+      <button class="btn-sm" onclick="goTo('s-analysis')">عرض التحليل</button>
+      <button class="btn-sm green" onclick="reAnalyze()">تحليل جديد ↺</button>
+    </div>
+  </div>
+  <div class="db-body" id="dbBody">
+    <div class="dash-empty"><h3>جاري بناء Dashboard...</h3><p>لحظة</p></div>
+  </div>
+</div>
+
+<!-- Toast container -->
+<div class="tc" id="tc"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+const MODEL    = 'qwen2.5-7b-instruct-q3_k_m.gguf';
+const API_BASE = 'http://localhost:5000';
+const EXTS     = ['.xlsx','.xls','.csv','.tsv'];
+
+let reg = {};       // file registry
+let fid = 0;
+let lastAnalysis = ''; // raw AI text
+let lastFiles    = []; // file entries that were analyzed
+
+// ══════════════════════════════════════════════════════════════════
+// Screen navigation
+// ══════════════════════════════════════════════════════════════════
+function goTo(id) {
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Drop Zone
+// ══════════════════════════════════════════════════════════════════
+const dz   = document.getElementById('dz');
+const fi   = document.getElementById('fi');
+const hint = document.getElementById('dzHint');
+
+dz.addEventListener('click', () => fi.click());
+fi.addEventListener('change', e => handle([...e.target.files]));
+
+let dc = 0;
+document.addEventListener('dragenter', e => { e.preventDefault(); dc++; if(dc===1){ dz.classList.add('over'); const items=[...(e.dataTransfer?.items||[])]; const n=items.filter(i=>i.kind==='file').length; hint.textContent = n>1 ? `📄 ${n} ملفات جاهزة للإفلات` : '📄 أفلت الملف هنا'; } });
+document.addEventListener('dragover',  e => e.preventDefault());
+document.addEventListener('dragleave', e => { dc--; if(dc<=0){dc=0;dz.classList.remove('over');} });
+document.addEventListener('drop', e => { e.preventDefault(); dc=0; dz.classList.remove('over'); handle([...(e.dataTransfer?.files||[])]); });
+
+function ext(n){ return '.'+n.split('.').pop().toLowerCase(); }
+function fmtSz(b){ if(b<1024) return b+'B'; if(b<1048576) return (b/1024).toFixed(1)+'KB'; return (b/1048576).toFixed(2)+'MB'; }
+function fmtSp(b){ if(!b||b<0) return '—'; if(b<1024) return b.toFixed(0)+'B/s'; if(b<1048576) return (b/1024).toFixed(0)+'KB/s'; return (b/1048576).toFixed(1)+'MB/s'; }
+function fmtEt(s){ if(!s||!isFinite(s)||s<0) return '—'; if(s<60) return Math.ceil(s)+'ث'; if(s<3600) return Math.ceil(s/60)+'د'; return Math.ceil(s/3600)+'س'; }
+function ti(n){ const e=ext(n); if(e==='.xlsx') return{e:'📗',c:'xlsx',l:'XLSX'}; if(e==='.xls') return{e:'📒',c:'xls',l:'XLS'}; if(e==='.csv') return{e:'📄',c:'csv',l:'CSV'}; return{e:'📁',c:'',l:ext(n).slice(1).toUpperCase()}; }
+
+function handle(files) {
+  const bad = files.filter(f=>!EXTS.includes(ext(f.name)));
+  if(bad.length) toast('❌ صيغة غير مدعومة: '+bad.map(f=>f.name).join(', '), 'er');
+  files = files.filter(f=>EXTS.includes(ext(f.name)));
+  files.forEach(addFile);
+}
+
+function addFile(file) {
+  const id = ++fid;
+  reg[id] = { id, file, status:'up', progress:0, speed:0, eta:null, t0:null, b64:null, error:null };
+  renderCard(id);
+  readFile(id);
+}
+
+function readFile(id) {
+  const en = reg[id];
+  en.status='up'; en.t0=Date.now(); updateCard(id);
+  const reader = new FileReader();
+  reader.onprogress = e => {
+    if(!e.lengthComputable) return;
+    en.progress = (e.loaded/e.total)*100;
+    const el = (Date.now()-en.t0)/1000;
+    en.speed = el>.1 ? e.loaded/el : 0;
+    en.eta   = en.speed>0 ? (en.file.size-e.loaded)/en.speed : null;
+    updateCard(id);
+  };
+  reader.onload = e => {
+    en.progress=100; en.speed=en.file.size/((Date.now()-en.t0)/1000); en.eta=0;
+    en.b64 = e.target.result.split(',')[1];
+    en.status='done'; updateCard(id);
+    toast('✓ '+en.file.name, 'ok');
+    autoAnalyze();
+  };
+  reader.onerror = () => { en.status='err'; en.error='فشل قراءة الملف'; updateCard(id); };
+  reader.readAsDataURL(en.file);
+}
+
+// auto-trigger when all files are done loading
+function autoAnalyze() {
+  const all = Object.values(reg);
+  if(!all.length) return;
+  const allDone = all.every(e=>e.status==='done'||e.status==='err');
+  if(allDone && all.some(e=>e.status==='done')) {
+    setTimeout(()=>startAnalysis(), 400);
+  }
+}
+
+function renderCard(id) {
+  const q = document.getElementById('fq');
+  const c = document.createElement('div');
+  c.id=`fc-${id}`; c.className='fc up';
+  q.appendChild(c);
+  updateCard(id);
+}
+
+function cHTML(id) {
+  const en=reg[id]; const t=ti(en.file.name);
+  const pct=Math.min(100,Math.round(en.progress));
+  let body='';
+  if(en.status==='up') {
+    body=`
+    <div class="ptrack"><div class="pfill" style="width:${pct}%"></div></div>
+    <div class="fstats">
+      <div class="fstat"><span class="fstat-v">${fmtSp(en.speed)}</span><span class="fstat-l">سرعة القراءة</span></div>
+      <div class="fstat"><span class="fstat-v">${fmtEt(en.eta)}</span><span class="fstat-l">متبقي</span></div>
+      <div class="fstat"><span class="fstat-v">${pct}%</span><span class="fstat-l">مكتمل</span></div>
+    </div>
+    <div class="fstatus up"><span class="sp">⟳</span> جاري التحميل...</div>`;
+  } else if(en.status==='done') {
+    body=`<div class="fstatus done">✓ جاهز — سيبدأ التحليل تلقائياً</div>`;
+  } else if(en.status==='err') {
+    body=`<div class="ferr">⚠ ${en.error||'خطأ'}</div><button class="btn-retry" onclick="retryFile(${id})">↺ إعادة المحاولة</button>`;
+  }
+  return `
+  <div class="ficon ${t.c}">${t.e}</div>
+  <div>
+    <div class="fname">${en.file.name}</div>
+    <div class="fmeta"><span>${fmtSz(en.file.size)}</span><span>${t.l}</span></div>
+    ${body}
+  </div>
+  <div class="fact">
+    ${en.status!=='up'?`<button class="bico" onclick="replaceFile(${id})" title="استبدال">↕</button>`:''}
+    <button class="bico d" onclick="removeFile(${id})" title="حذف">✕</button>
+  </div>`;
+}
+
+function updateCard(id) {
+  const c=document.getElementById(`fc-${id}`); if(!c) return;
+  const en=reg[id];
+  const cm={up:'up',done:'done',err:'err'};
+  c.className='fc '+(cm[en.status]||'');
+  c.innerHTML=cHTML(id);
+}
+
+function removeFile(id) {
+  const c=document.getElementById(`fc-${id}`);
+  if(c){c.style.animation='fadeUp .2s ease reverse both';setTimeout(()=>c.remove(),200);}
+  delete reg[id];
+}
+
+function replaceFile(id) {
+  const inp=document.createElement('input'); inp.type='file'; inp.accept=EXTS.join(',');
+  inp.onchange=e=>{ const f=e.target.files[0]; if(!f) return; if(!EXTS.includes(ext(f.name))){toast('صيغة غير مدعومة','er');return;}
+    reg[id]={...reg[id],file:f,status:'up',progress:0,error:null,b64:null}; updateCard(id); readFile(id); };
+  inp.click();
+}
+
+function retryFile(id) {
+  const en=reg[id]; if(!en) return;
+  en.status='up'; en.progress=0; en.error=null; en.b64=null; updateCard(id); readFile(id);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// AI Analysis
+// ══════════════════════════════════════════════════════════════════
+async function startAnalysis() {
+  const ready = Object.values(reg).filter(e=>e.status==='done');
+  if(!ready.length) return;
+  lastFiles = ready;
+
+  // switch to analysis screen immediately
+  goTo('s-analysis');
+  document.getElementById('anaFile').textContent = ready.map(e=>e.file.name).join(', ');
+  document.getElementById('anaBadge').className = 'ana-badge';
+  document.getElementById('anaBadgeText').textContent = 'يعالج...';
+
+  const wrap = document.getElementById('streamWrap');
+  wrap.innerHTML = '<div class="stream-thinking" id="thinking"><div class="think-dots"><span></span><span></span><span></span></div><span>يقرأ البيانات ويحللها...</span></div>';
+
+  const fileObjs = ready.map(e=>({ name:e.file.name, type:e.file.type||'application/octet-stream', content:e.b64, is_base64:true }));
+
+  const systemPrompt = `أنت محلل بيانات. حين تتلقى ملف Excel أو CSV، ابدأ مباشرة بالتحليل — لا مقدمات، لا "سأقوم بـ"، لا جمل حشو.
+
+أخرج النتائج مباشرة هكذا:
+
+## الملخص
+[جملتان: عدد الصفوف والأعمدة وموضوع البيانات]
+
+## أبرز الأرقام
+[أهم 4-6 أرقام/إحصاءات مباشرة]
+
+## الجدول الكامل
+[أعد بيانات الجدول الأصلي كجدول markdown — كل الصفوف أو أهم 20 صف]
+
+## الإحصاءات التفصيلية
+[جدول markdown: العمود، النوع، المتوسط/المجموع، الأعلى، الأدنى]
+
+## الأنماط والرؤى
+[3-5 نقاط مباشرة عن ما تراه في البيانات]
+
+## توصيات الـ Dashboard
+[اذكر 3-4 أنواع مخططات مناسبة مع الأعمدة المقترحة]
+
+كن مباشراً، لا حشو، عربية فصحى واضحة.`;
+
+  const prompt = 'حلل هذه البيانات';
+  const streamId = 'sid-'+Date.now();
+  let fullText = '';
+  let started = false;
+
+  try {
+    const resp = await fetch(`${API_BASE}/api/chat/stream`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ prompt, model:MODEL, files:fileObjs, stream_id:streamId, max_tokens:4096, n_gpu_layers:-1, n_ctx:32768, system_prompt:systemPrompt }),
+    });
+    if(!resp.ok) throw new Error(`HTTP ${resp.status}`);
+
+    const reader = resp.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
+    while(true) {
+      const {done, value} = await reader.read();
+      if(done) break;
+      buf += dec.decode(value,{stream:true});
+      const lines = buf.split('\n');
+      buf = lines.pop();
+
+      for(const line of lines) {
+        if(!line.startsWith('data: ')) continue;
+        try {
+          const d = JSON.parse(line.slice(6));
+          if(d.error) throw new Error(d.error);
+          if(d.text) {
+            if(!started) {
+              // remove thinking indicator, start streaming
+              wrap.innerHTML = '';
+              started = true;
+            }
+            fullText += d.text;
+            wrap.innerHTML = renderMD(fullText) + '<span class="cursor"></span>';
+          }
+          if(d.done) {
+            lastAnalysis = fullText;
+            wrap.innerHTML = renderMD(fullText);
+            document.getElementById('anaBadge').className = 'ana-badge done';
+            document.getElementById('anaBadgeText').textContent = 'اكتمل التحليل';
+            toast('✓ اكتمل التحليل — جاري بناء الـ Dashboard', 'ok');
+            setTimeout(() => buildDashboard(fullText, ready), 600);
+          }
+        } catch(e) { if(e.message&&!e.message.includes('JSON')) throw e; }
+      }
+    }
+  } catch(err) {
+    wrap.innerHTML = `<div class="ferr">⚠ ${err.message}</div><button class="btn-retry" onclick="startAnalysis()">↺ إعادة المحاولة</button>`;
+    toast('❌ فشل التحليل', 'er');
+  }
+}
+
+function reAnalyze() {
+  startAnalysis();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Dashboard builder — parses AI output + renders charts/tables
+// ══════════════════════════════════════════════════════════════════
+function buildDashboard(text, entries) {
+  const body = document.getElementById('dbBody');
+  const fname = entries.map(e=>e.file.name).join(', ');
+  document.getElementById('dbTitle').textContent = entries.length===1 ? entries[0].file.name : 'Dashboard متعدد الملفات';
+  document.getElementById('dbSub').textContent = entries.map(e=>e.file.name+' · '+fmtSz(e.file.size)).join(' | ');
+
+  // Parse tables from markdown
+  const tables = parseMDTables(text);
+  // Parse key numbers
+  const kpis   = extractKPIs(text);
+  // Parse insights
+  const insights = extractInsights(text);
+
+  let html = '';
+
+  // KPI row
+  if(kpis.length) {
+    html += '<div class="kpi-row">';
+    kpis.forEach(k => {
+      const cls = k.change>0?'pos':k.change<0?'neg':'';
+      const sign = k.change>0?'↑':k.change<0?'↓':'';
+      html += `<div class="kpi">
+        <div class="kpi-label">${k.label}</div>
+        <div class="kpi-value" style="color:${colorForValue(k.value)}">${k.value}</div>
+        ${k.change!==null?`<div class="kpi-change ${cls}">${sign} ${Math.abs(k.change)}%</div>`:''}
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Charts — build from first data table
+  if(tables.length) {
+    html += '<div class="chart-grid">';
+    const mainTable = tables[0];
+    const numCols   = getNumericCols(mainTable);
+    const strCols   = getStringCols(mainTable);
+    const labelCol  = strCols[0] || mainTable.headers[0];
+    const labels    = mainTable.rows.slice(0,12).map(r=>r[labelCol]||'');
+
+    // Bar chart
+    if(numCols.length >= 1) {
+      const col = numCols[0];
+      const data = mainTable.rows.slice(0,12).map(r=>parseFloat(String(r[col]||'0').replace(/,/g,''))||0);
+      html += `<div class="chart-card">
+        <div class="chart-title"><span class="chart-title-dot"></span>${col}</div>
+        <div class="chart-wrap"><canvas id="ch-bar"></canvas></div>
+      </div>`;
+
+      // Line chart if enough rows
+      if(numCols.length >= 2) {
+        const col2 = numCols[1];
+        const data2 = mainTable.rows.slice(0,12).map(r=>parseFloat(String(r[col2]||'0').replace(/,/g,''))||0);
+        html += `<div class="chart-card">
+          <div class="chart-title"><span class="chart-title-dot"></span>${col2}</div>
+          <div class="chart-wrap"><canvas id="ch-line"></canvas></div>
+        </div>`;
+      }
+
+      // Pie if labels are meaningful
+      if(labels.filter(l=>l).length >= 2) {
+        html += `<div class="chart-card">
+          <div class="chart-title"><span class="chart-title-dot"></span>التوزيع — ${col}</div>
+          <div class="chart-wrap"><canvas id="ch-pie"></canvas></div>
+        </div>`;
+      }
+
+      // Multi-bar if 3+ numeric cols
+      if(numCols.length >= 3) {
+        html += `<div class="chart-card wide">
+          <div class="chart-title"><span class="chart-title-dot"></span>مقارنة شاملة</div>
+          <div class="chart-wrap tall"><canvas id="ch-multi"></canvas></div>
+        </div>`;
+      }
+    }
+    html += '</div>';
+
+    // Full data tables
+    tables.forEach((tbl,i) => {
+      const maxRows = 30;
+      html += `<div class="tbl-card">
+        <div class="tbl-head">
+          <div class="tbl-title"><span class="chart-title-dot"></span>البيانات الكاملة${tables.length>1?' — جدول '+(i+1):''}
+          </div>
+          <span class="tbl-count">${tbl.rows.length} صف</span>
+        </div>
+        <div class="tbl-wrap">
+        <table class="dt">
+          <thead><tr>${tbl.headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${tbl.rows.slice(0,maxRows).map(r=>`<tr>${tbl.headers.map(h=>{
+              const v=r[h]||'';
+              const num=parseFloat(String(v).replace(/,/g,''));
+              if(!isNaN(num)&&v!=='') return `<td class="td-num">${v}</td>`;
+              return `<td>${v}</td>`;
+            }).join('')}</tr>`).join('')}
+            ${tbl.rows.length>maxRows?`<tr><td colspan="${tbl.headers.length}" style="text-align:center;color:var(--t3);padding:12px">... و ${tbl.rows.length-maxRows} صف إضافي</td></tr>`:''}
+          </tbody>
+        </table>
+        </div>
+      </div>`;
+    });
+  } else {
+    // No tables parsed — show AI text as formatted output
+    html += `<div class="tbl-card"><div class="tbl-head"><div class="tbl-title"><span class="chart-title-dot"></span>تحليل البيانات</div></div><div style="padding:20px;font-size:13px;line-height:1.85;color:var(--t2)">${renderMD(text)}</div></div>`;
+  }
+
+  // Insights
+  if(insights.length) {
+    html += `<div class="ins-card">
+      <div class="ins-title"><span class="chart-title-dot"></span>رؤى تحليلية</div>
+      <div class="ins-list">
+        ${insights.map((ins,i)=>`<div class="ins-item"><div class="ins-icon">${['📈','🔍','⚡','💡','🎯','📊'][i%6]}</div><div class="ins-text"><strong>${ins.title}</strong>${ins.body}</div></div>`).join('')}
+      </div>
+    </div>`;
+  }
+
+  body.innerHTML = html;
+  goTo('s-dashboard');
+
+  // Render charts after DOM is ready
+  setTimeout(() => renderCharts(tables), 80);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Chart rendering
+// ══════════════════════════════════════════════════════════════════
+const PALETTE = ['#4caf50','#58a6ff','#ff8c42','#e3b341','#c678dd','#56d364','#f85149','#79c0ff'];
+
+function renderCharts(tables) {
+  if(!tables.length) return;
+  const tbl = tables[0];
+  const numCols = getNumericCols(tbl);
+  const strCols = getStringCols(tbl);
+  const labelCol = strCols[0] || tbl.headers[0];
+  const labels = tbl.rows.slice(0,12).map(r=>String(r[labelCol]||'').slice(0,18));
+  const chartDefaults = { color:'#8b949e', font:{ family:"'IBM Plex Sans Arabic', sans-serif", size:11 } };
+  Chart.defaults.color = chartDefaults.color;
+  Chart.defaults.font  = chartDefaults.font;
+
+  const gridCfg = { color:'rgba(48,54,61,0.8)', drawBorder:false };
+  const tickCfg  = { color:'#484f58' };
+
+  function makeChart(id, type, labels, datasets, extra={}) {
+    const el = document.getElementById(id); if(!el) return;
+    new Chart(el, { type, data:{ labels, datasets }, options:{
+      responsive:true, maintainAspectRatio:false, animation:{ duration:600, easing:'easeOutQuart' },
+      plugins:{ legend:{ display:datasets.length>1, position:'bottom', labels:{ boxWidth:10, padding:16, color:'#8b949e' } }, tooltip:{ backgroundColor:'#1c2333', borderColor:'#30363d', borderWidth:1, titleColor:'#e6edf3', bodyColor:'#8b949e', padding:10 } },
+      scales: type!=='pie'&&type!=='doughnut' ? {
+        x:{ grid:gridCfg, ticks:{ ...tickCfg, maxRotation:30 } },
+        y:{ grid:gridCfg, ticks:tickCfg, beginAtZero:true }
+      } : undefined,
+      ...extra
+    }});
+  }
+
+  if(numCols.length >= 1) {
+    const col  = numCols[0];
+    const data = tbl.rows.slice(0,12).map(r=>parseFloat(String(r[col]||'0').replace(/,/g,''))||0);
+
+    makeChart('ch-bar','bar',labels,[{ label:col, data, backgroundColor:PALETTE[0]+'99', borderColor:PALETTE[0], borderWidth:1, borderRadius:4 }]);
+
+    if(numCols.length >= 2) {
+      const col2  = numCols[1];
+      const data2 = tbl.rows.slice(0,12).map(r=>parseFloat(String(r[col2]||'0').replace(/,/g,''))||0);
+      makeChart('ch-line','line',labels,[{ label:col2, data:data2, borderColor:PALETTE[1], backgroundColor:PALETTE[1]+'22', tension:.35, pointBackgroundColor:PALETTE[1], fill:true }]);
+    }
+
+    if(labels.filter(l=>l).length >= 2) {
+      const pieData = data.slice(0,8);
+      const pieLabels = labels.slice(0,8);
+      makeChart('ch-pie','doughnut',pieLabels,[{ data:pieData, backgroundColor:PALETTE.map(c=>c+'cc'), borderColor:'#1c2333', borderWidth:2, hoverOffset:8 }]);
+    }
+
+    if(numCols.length >= 3) {
+      const multiDs = numCols.slice(0,4).map((c,i)=>({
+        label:c,
+        data:tbl.rows.slice(0,12).map(r=>parseFloat(String(r[c]||'0').replace(/,/g,''))||0),
+        backgroundColor:PALETTE[i]+'99', borderColor:PALETTE[i], borderWidth:1, borderRadius:3,
+      }));
+      makeChart('ch-multi','bar',labels,multiDs,{ scales:{ x:{grid:gridCfg,ticks:tickCfg}, y:{grid:gridCfg,ticks:tickCfg,beginAtZero:true} } });
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Markdown table parser
+// ══════════════════════════════════════════════════════════════════
+function parseMDTables(text) {
+  const tables = [];
+  const lines  = text.split('\n');
+  let i = 0;
+  while(i < lines.length) {
+    const line = lines[i].trim();
+    if(line.startsWith('|') && line.endsWith('|')) {
+      const headers = line.split('|').filter((_,j,a)=>j>0&&j<a.length-1).map(h=>h.trim());
+      if(headers.length < 2) { i++; continue; }
+      i++;
+      // separator line
+      if(i<lines.length && /^\|[-| :]+\|$/.test(lines[i].trim())) i++;
+      const rows = [];
+      while(i<lines.length && lines[i].trim().startsWith('|') && lines[i].trim().endsWith('|')) {
+        const cells = lines[i].split('|').filter((_,j,a)=>j>0&&j<a.length-1).map(c=>c.trim());
+        const row = {};
+        headers.forEach((h,hi)=>{ row[h]=cells[hi]||''; });
+        rows.push(row);
+        i++;
+      }
+      if(rows.length>0) tables.push({ headers, rows });
+    } else { i++; }
+  }
+  return tables;
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Extract KPIs from AI text
+// ══════════════════════════════════════════════════════════════════
+function extractKPIs(text) {
+  const kpis = [];
+  // Patterns: "المجموع: 123,456" / "عدد الصفوف: 200" / "**Label**: value"
+  const patterns = [
+    /\*\*([^*]+)\*\*[:\s]+([0-9,\.]+\s*(?:K|M|B|%|ألف|مليون)?)/gi,
+    /(?:^|\n)[•\-]\s*([^:：]+)[:\s：]+([0-9,\.]+\s*(?:K|M|B|%|ألف|مليون)?)/gim,
+  ];
+  const seen = new Set();
+  for(const re of patterns) {
+    let m;
+    while((m=re.exec(text))!==null && kpis.length<6) {
+      const label = m[1].trim();
+      const value = m[2].trim();
+      if(seen.has(label)||label.length>30||!value) continue;
+      seen.add(label);
+      kpis.push({ label, value, change:null });
+    }
+  }
+  return kpis.slice(0,6);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Extract insights bullet points
+// ══════════════════════════════════════════════════════════════════
+function extractInsights(text) {
+  const ins = [];
+  const insSection = text.match(/##[^#\n]*(?:أنماط|رؤى|insights|ملاحظات|توصيات)[^\n]*\n([\s\S]*?)(?=##|$)/i);
+  if(!insSection) return ins;
+  const lines = insSection[1].split('\n');
+  for(const line of lines) {
+    const m = line.match(/^[-•*]\s*(.+)/);
+    if(!m) continue;
+    const raw = m[1].trim();
+    const titleMatch = raw.match(/\*\*([^*]+)\*\*[:\s]*(.*)/);
+    if(titleMatch) ins.push({ title:titleMatch[1], body:titleMatch[2] });
+    else ins.push({ title:raw.slice(0,50), body:raw.slice(50) });
+    if(ins.length>=6) break;
+  }
+  return ins;
+}
+
+function getNumericCols(tbl) {
+  return tbl.headers.filter(h => {
+    const vals = tbl.rows.slice(0,5).map(r=>r[h]||'');
+    return vals.filter(v=>!isNaN(parseFloat(String(v).replace(/,/g,'')))).length >= 2;
+  });
+}
+
+function getStringCols(tbl) {
+  return tbl.headers.filter(h => {
+    const vals = tbl.rows.slice(0,5).map(r=>r[h]||'');
+    return vals.filter(v=>isNaN(parseFloat(v))||v==='').length >= 2;
+  });
+}
+
+function colorForValue(v) {
+  const n = parseFloat(String(v).replace(/,/g,''));
+  if(isNaN(n)) return 'var(--t1)';
+  if(n<0) return 'var(--red)';
+  return 'var(--green)';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Markdown renderer (for analysis screen)
+// ══════════════════════════════════════════════════════════════════
+function renderMD(t) {
+  // tables
+  t = t.replace(/(\|[^\n]+\|\n)((?:\|[-: |]+\|\n))((?:\|[^\n]+\|\n?)*)/g, (m,head,sep,body)=>{
+    const hs = head.split('|').filter((_,i,a)=>i>0&&i<a.length-1).map(h=>`<th>${h.trim()}</th>`).join('');
+    const rows = body.trim().split('\n').map(r=>{
+      const cells=r.split('|').filter((_,i,a)=>i>0&&i<a.length-1).map(c=>`<td>${c.trim()}</td>`).join('');
+      return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<table><thead><tr>${hs}</tr></thead><tbody>${rows}</tbody></table>`;
+  });
+  return t
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/&lt;table&gt;/g,'<table>').replace(/&lt;\/table&gt;/g,'</table>')
+    .replace(/&lt;thead&gt;/g,'<thead>').replace(/&lt;\/thead&gt;/g,'</thead>')
+    .replace(/&lt;tbody&gt;/g,'<tbody>').replace(/&lt;\/tbody&gt;/g,'</tbody>')
+    .replace(/&lt;tr&gt;/g,'<tr>').replace(/&lt;\/tr&gt;/g,'</tr>')
+    .replace(/&lt;th&gt;/g,'<th>').replace(/&lt;\/th&gt;/g,'</th>')
+    .replace(/&lt;td&gt;/g,'<td>').replace(/&lt;\/td&gt;/g,'</td>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/^[-•] (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>[\s\S]*?<\/li>(\n)?)+/g, s=>`<ul>${s}</ul>`)
+    .replace(/\n{2,}/g,'</p><p>')
+    .replace(/^([^<\n].+)$/gm,'<p>$1</p>')
+    .replace(/<p><\/p>/g,'')
+    .replace(/<p>(<(?:h[23]|ul|table))/g,'$1')
+    .replace(/(<\/(?:h[23]|ul|table)>)<\/p>/g,'$1');
+}
+
+// ══════════════════════════════════════════════════════════════════
+// Toast
+// ══════════════════════════════════════════════════════════════════
+function toast(msg, type='ok') {
+  const c=document.getElementById('tc');
+  const d=document.createElement('div');
+  d.className=`toast ${type}`;d.textContent=msg;
+  c.appendChild(d);setTimeout(()=>d.remove(),3200);
+}
+</script>
+</body>
+</html>
